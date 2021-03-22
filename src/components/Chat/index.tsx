@@ -15,6 +15,11 @@ function createGraph(container: HTMLElement) {
   };
 
   const defaultStateStyles = {
+    selected: {
+      fill: "#91d5ff",
+      stroke: "#1890ff",
+      lineWidth: 2
+    },
     hover: {
       stroke: "#1890ff",
       lineWidth: 2
@@ -56,22 +61,11 @@ function createGraph(container: HTMLElement) {
     width,
     height,
     modes: {
-      default: ["drag-canvas", "zoom-canvas"]
+      default: ["drag-canvas", "zoom-canvas", "click-select"]
     },
     defaultNode: {
       label: "rect",
       type: "rect",
-      // style: {
-      //   // The style for the keyShape
-      //   fill: "lightblue",
-      //   stroke: "#888",
-      //   lineWidth: 1,
-      //   radius: 7,
-      //   hover: {
-      //     stroke: "#1890ff",
-      //     lineWidth: 2
-      //   }
-      // }
       style: defaultNodeStyle,
       labelCfg: defaultLabelCfg
     },
@@ -83,6 +77,8 @@ function createGraph(container: HTMLElement) {
     edgeStateStyles: defaultStateStyles,
     layout: defaultLayout
   });
+  // Register a custom behavior: click two end nodes to add an edge
+
   return graph;
 }
 
@@ -117,30 +113,9 @@ export default function () {
       graph.setItemState(item, "hover", false);
     });
 
-    graph.on("node:click", (evt) => {
-      const { item, target } = evt;
-
-      // const targetType = target.get("type");
-      // const name = target.get("name");
-
-      console.log("click", item);
-      // 增加元素
-      // if (targetType === "marker") {
-      const model = item.getModel();
-      // if (name === "add-item") {
-      if (!model.children) {
-        model.children = [];
-      }
-      const id = `n-${Math.random()}`;
-      model.children.push({
-        id
-      });
-      graph.updateChild(model, model.id);
-      // }
-      // else if (name === "remove-item") {
-      //   graph.removeChild(model.id);
-      // }
-      // }
+    graph.on("node:click", (evt) => {});
+    graph.on("nodeselectchange", (e) => {
+      console.log(e.selectedItems, e.select);
     });
   }, []);
   return <div id="container" ref={ref}></div>;
