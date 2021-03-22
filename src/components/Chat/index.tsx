@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { data } from "./data";
-import G6 from "@antv/g6";
+import G6, { TreeGraph, INode, IEdge } from "@antv/g6";
 
 function createGraph(container: HTMLElement) {
   const width = 1200;
@@ -82,12 +82,21 @@ function createGraph(container: HTMLElement) {
   return graph;
 }
 
+let graph: null | TreeGraph = null;
 export default function () {
+  const [selectedItems, setSelectedItems] = useState<{
+    nodes: INode[];
+    edges: IEdge[];
+  }>({
+    nodes: [],
+    edges: []
+  });
   const ref = React.useRef(null);
 
   useEffect(() => {
     const container = ReactDOM.findDOMNode(ref.current) as HTMLElement;
-    const graph = createGraph(container as HTMLElement);
+    if (graph !== null) return;
+    graph = createGraph(container as HTMLElement);
 
     graph.node(function (node) {
       return {
@@ -115,8 +124,51 @@ export default function () {
 
     graph.on("node:click", (evt) => {});
     graph.on("nodeselectchange", (e) => {
-      console.log(e.selectedItems, e.select);
+      setSelectedItems(e.selectedItems);
     });
   }, []);
-  return <div id="container" ref={ref}></div>;
+
+  const onAdd = () => {
+    if (selectedItems?.nodes?.length) {
+      const node = selectedItems.nodes[0];
+      const model = node.getModel();
+      if (!model.children) {
+        model.children = [];
+      }
+      const id = `n-${Math.random()}`;
+      model.children.push({
+        id
+      });
+      graph?.updateChild(model, model.id);
+    }
+  };
+  const onDel = () => {
+    if (selectedItems?.nodes?.length) {
+      const node = selectedItems.nodes[0];
+      const model = node.getModel();
+      if (!model.children) {
+        model.children = [];
+      }
+      const id = `n-${Math.random()}`;
+      model.children.push({
+        id
+      });
+      graph?.removeChild(model.id);
+    }
+  };
+  const onOk = () => {
+    console.log(graph?.cfg?.nodes);
+    console.log(graph?.cfg?.edges);
+  };
+
+  return (
+    <>
+      <div>
+        <button onClick={onAdd}>增加</button>
+        <button onClick={onDel}>删除</button>
+        <button onClick={onOk}>确定</button>
+      </div>
+      <div id="container" ref={ref}></div>
+    </>
+  );
 }
